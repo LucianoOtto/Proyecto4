@@ -1,0 +1,92 @@
+import { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { Form } from './Form'
+import { Input } from "./Input"
+import { Button } from "./Button"
+import { toast } from 'react-toastify'
+import { useStore } from '../store/useStore'
+
+const Legend = () => {
+  return <p className="text-purple-200">No tiene cuenta? <Link to="/register" className="underline text-purple-400 hover:text-purple-300" >Registrate</Link></p>
+}
+
+const Login = () => {
+  const { setUser } = useStore()
+  const navigate = useNavigate()
+  
+  // Estados
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [loading, setLoading] = useState(false)
+  
+  // Funciones
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setLoading(true)
+    
+    try {
+      const body = {
+        email,
+        password
+      }
+      const url = `${import.meta.env.VITE_API_URL}/login`
+      const config = {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify(body)
+      }
+
+      const req = await fetch(url, config)
+      const res = await req.json()
+
+      if (res.error) {
+        toast.error(res.msg)
+        return
+      }
+
+      setUser(res.user)
+      toast.success("Sesión iniciada")
+      
+      // Redirigir a la lista de productos
+      navigate('/private/productos')
+
+    } catch (error) {
+      toast.error("Error al iniciar sesión")
+      console.error(error)
+    } finally {
+      setLoading(false)
+    }
+  }
+  
+  return (
+    <Form title="Iniciar Sesión" Legend={Legend} onSubmit={handleSubmit}>
+      <Input
+        type="email"
+        id="email"
+        name="email"
+        title="Email"
+        placeholder="tu@email.com"
+        value={email}
+        onChange={(e) => { setEmail(e.target.value) }}
+      />
+      <Input
+        type="password"
+        id="password"
+        name="password"
+        placeholder="********"
+        title="Contraseña"
+        value={password}
+        onChange={(e) => { setPassword(e.target.value) }}
+      />
+      <Button 
+        type='submit' 
+        value={loading ? "Iniciando..." : "Iniciar Sesión"}
+        disabled={loading}
+      />
+    </Form>
+  )
+}
+
+export default Login
