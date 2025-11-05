@@ -1,11 +1,28 @@
-import { Sequelize } from 'sequelize';
+import { Sequelize } from "sequelize"
+import dotenv from "dotenv"
 
-export const sequelize = new Sequelize({
-  dialect: 'mysql',
-  host: process.env.HOST_DB,
-  port: process.env.PORT_DB,
-  username: process.env.USER_DB,
-  password: process.env.PASS_DB,
-  database: process.env.NAME_DB,
-  logging: false
-});
+dotenv.config()
+
+const config = {
+  database: process.env.NAME_DB || 'stock_utn',
+  username: process.env.USER_DB || 'root',
+  password: process.env.PASS_DB || '',
+  options: {
+    host: process.env.HOST_DB || 'localhost',
+    port: process.env.PORT_DB ? Number(process.env.PORT_DB) : 3306,
+    dialect: process.env.DIALECT_DB || 'mysql',
+    logging: console.log
+  }
+}
+
+console.log('Configuración de base de datos:', {
+  ...config,
+  password: config.password ? '****' : ''
+})
+
+export const sequelize = new Sequelize(
+  config.database,
+  config.username,
+  config.password,
+  config.options
+)

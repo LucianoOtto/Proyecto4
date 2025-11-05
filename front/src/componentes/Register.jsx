@@ -2,11 +2,11 @@ import { useState } from 'react'
 import { Form } from './Form'
 import { Input } from './Input'
 import { Button } from "./Button"
-import { Link } from 'react-router'
+import { Link } from 'react-router-dom'
 import { toast } from "react-toastify"
 
 const Legend = () => {
-  return <p>Ya tiene cuenta? <Link to="/" className='underline text-sky-800'>Inicia Sesion</Link></p>
+  return <p>Ya tiene cuenta? <Link to="/login" className='underline text-sky-800'>Inicia Sesion</Link></p>
 }
 
 
@@ -23,7 +23,26 @@ const Register = () => {
     e.preventDefault()
     setLoading(true)
     try {
-      const url = import.meta.env.VITE_API_URL
+      // Client-side validation
+      if (!fullName || !email || !password || !confirmPassword) {
+        toast.error('Complete todos los campos')
+        setLoading(false)
+        return
+      }
+
+      if (password !== confirmPassword) {
+        toast.error('Las contraseñas no coinciden')
+        setLoading(false)
+        return
+      }
+
+      if (password.length < 6) {
+        toast.error('La contraseña debe tener al menos 6 caracteres')
+        setLoading(false)
+        return
+      }
+
+      const url = `${import.meta.env.VITE_API_URL}/api/auth/register`
       const body = {
         fullName,
         email,
@@ -41,12 +60,12 @@ const Register = () => {
 
       const res = await req.json()
 
-      if (res.error) {
-        toast.error(res.msg)
+      if (!req.ok) {
+        toast.error(res.message || 'Error en el registro')
         return
       }
 
-      toast.success(res.msg)
+      toast.success(res.message || 'Usuario creado')
       setFullName("")
       setEmail("")
       setPassword("")

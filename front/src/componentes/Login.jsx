@@ -13,23 +13,23 @@ const Legend = () => {
 const Login = () => {
   const { setUser } = useStore()
   const navigate = useNavigate()
-  
+
   // Estados
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
-  
+
   // Funciones
   const handleSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
-    
+
     try {
       const body = {
         email,
         password
       }
-      const url = `${import.meta.env.VITE_API_URL}/login`
+      const url = `${import.meta.env.VITE_API_URL}/api/auth/login`
       const config = {
         method: "POST",
         headers: {
@@ -41,14 +41,18 @@ const Login = () => {
       const req = await fetch(url, config)
       const res = await req.json()
 
-      if (res.error) {
-        toast.error(res.msg)
+      if (!req.ok) {
+        toast.error(res.message)
         return
       }
-
-      setUser(res.user)
+      setUser({
+        email,
+        token: res.token,
+        full_name: res.user?.fullName || email  // Agrega esto
+      })
       toast.success("Sesión iniciada")
-      
+      navigate('/private/productos')
+
       // Redirigir a la lista de productos
       navigate('/private/productos')
 
@@ -59,7 +63,7 @@ const Login = () => {
       setLoading(false)
     }
   }
-  
+
   return (
     <Form title="Iniciar Sesión" Legend={Legend} onSubmit={handleSubmit}>
       <Input
@@ -80,8 +84,8 @@ const Login = () => {
         value={password}
         onChange={(e) => { setPassword(e.target.value) }}
       />
-      <Button 
-        type='submit' 
+      <Button
+        type='submit'
         value={loading ? "Iniciando..." : "Iniciar Sesión"}
         disabled={loading}
       />

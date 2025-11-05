@@ -28,7 +28,8 @@ User.init({
   },
   activateToken: {
     type: DataTypes.STRING
-  }}, {
+  }
+}, {
   tableName: "users",
   sequelize
 })
